@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "producto": "Cristal 620 ml",
+    "categoria": "Cerveza",
+    "precio": 7.5
+  },
+  {
+    "id": 2,
+    "producto": "Pilsen Callao 620 ml",
+    "categoria": "Cerveza",
+    "precio": 8
+  },
+  {
+    "id": 3,
+    "producto": "Cusqueña 620 ml",
+    "categoria": "Cerveza",
+    "precio": 9
+  }
+]

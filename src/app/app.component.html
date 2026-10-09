@@ -1,0 +1,207 @@
+<main class="page">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Backus Ventas, inicio">
+      <span class="brand-mark" aria-hidden="true">B</span>
+      <span>Backus <strong>Ventas</strong></span>
+    </a>
+    <button type="button" class="cart-shortcut" (click)="abrirCarrito()" [attr.aria-label]="'Ver carrito, ' + cantidadCarrito + ' productos'">
+      <span aria-hidden="true">🛒</span>
+      Carrito
+      <span class="cart-count">{{ cantidadCarrito }}</span>
+    </button>
+    <a class="history-shortcut" href="#historial">
+      Compras
+      <span class="cart-count">{{ compras.length }}</span>
+    </a>
+    <span class="connection-badge" [class.online]="online" [class.offline]="!online">
+      <span class="connection-dot" aria-hidden="true"></span>
+      {{ online ? 'CONECTADO' : 'SIN CONEXIÓN' }}
+    </span>
+  </header>
+
+  @if (mensaje) {
+    <p class="feedback success" role="status" aria-live="polite">{{ mensaje }}</p>
+  }
+
+  <section class="intro">
+    <p class="eyebrow">VENTAS DE CAMPO</p>
+    <h1>Tu catálogo, <span>siempre contigo.</span></h1>
+    <p class="intro-copy">
+      Consulta los productos, agrega al carrito y registra pedidos incluso sin señal.
+    </p>
+  </section>
+
+  <section class="catalog-section" aria-labelledby="catalog-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">PORTAFOLIO</p>
+        <h2 id="catalog-title">Catálogo de productos</h2>
+      </div>
+      <span class="product-count">{{ productos.length }} productos</span>
+    </div>
+
+    @if (errorCatalogo) {
+      <p class="feedback error" role="alert">{{ errorCatalogo }}</p>
+    } @else if (productos.length === 0) {
+      <p class="empty-state">Cargando catálogo...</p>
+    } @else {
+      <div class="product-grid">
+        @for (producto of productos; track producto.id) {
+          <article class="product-card">
+            <div class="product-icon" aria-hidden="true">B</div>
+            <div class="product-info">
+              <span class="category">{{ producto.categoria }}</span>
+              <h3>{{ producto.producto }}</h3>
+            </div>
+            <div class="product-actions">
+              <p class="price">S/ {{ producto.precio.toFixed(2) }}</p>
+              <button type="button" class="add-button" (click)="agregarAlCarrito(producto)">
+                Agregar al carrito
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </section>
+
+  @if (carritoAbierto) {
+    <div class="cart-overlay" (click)="cerrarCarrito()" (keydown.escape)="cerrarCarrito()">
+      <section
+        class="cart-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cart-title"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="section-heading cart-header">
+          <div>
+            <p class="eyebrow">CARRITO</p>
+            <h2 id="cart-title">Carrito de compras</h2>
+          </div>
+          <button type="button" class="close-cart" (click)="cerrarCarrito()" aria-label="Cerrar carrito">
+            ×
+          </button>
+        </div>
+
+        @if (carrito.length === 0) {
+          <p class="empty-state">Tu carrito está vacío.</p>
+        } @else {
+          <div class="cart-list">
+            @for (item of carrito; track item.productoId) {
+              <div class="cart-item">
+                <div>
+                  <strong>{{ item.producto }}</strong>
+                  <small>{{ item.categoria }}</small>
+                  <button type="button" class="remove-button" (click)="quitarProducto(item)" [disabled]="procesandoCompra">
+                    Quitar
+                  </button>
+                </div>
+                <div class="cart-meta">
+                  <div class="quantity-control" [attr.aria-label]="'Cantidad de ' + item.producto">
+                    <button type="button" (click)="cambiarCantidad(item, -1)" [disabled]="item.cantidad <= 1 || procesandoCompra" [attr.aria-label]="'Reducir cantidad de ' + item.producto">−</button>
+                    <span>{{ item.cantidad }}</span>
+                    <button type="button" (click)="cambiarCantidad(item, 1)" [disabled]="procesandoCompra" [attr.aria-label]="'Aumentar cantidad de ' + item.producto">+</button>
+                  </div>
+                  <small>S/ {{ item.precio.toFixed(2) }} c/u</small>
+                  <strong>S/ {{ (item.precio * item.cantidad).toFixed(2) }}</strong>
+                </div>
+              </div>
+            }
+          </div>
+          <div class="cart-total">
+            <span>Total</span>
+            <strong>S/ {{ totalCarrito.toFixed(2) }}</strong>
+          </div>
+        }
+
+        <div class="cart-buttons">
+          <button type="button" class="ghost-button" (click)="limpiarCarrito()" [disabled]="carrito.length === 0 || procesandoCompra">
+            Vaciar
+          </button>
+          <button
+            type="button"
+            class="checkout-button"
+            (click)="finalizarCompra()"
+            [disabled]="carrito.length === 0 || procesandoCompra"
+          >
+            {{ procesandoCompra ? 'Guardando...' : 'Finalizar compra' }}
+          </button>
+        </div>
+      </section>
+    </div>
+  }
+
+  <section class="history-section" id="historial" aria-labelledby="history-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">EN ESTE DISPOSITIVO</p>
+        <h2 id="history-title">Historial de compras</h2>
+      </div>
+      <button type="button" class="ghost-button" (click)="cargarHistorial()">Actualizar</button>
+    </div>
+    @if (errorHistorial) {
+      <p class="feedback error" role="alert">{{ errorHistorial }}</p>
+    } @else if (cargandoHistorial) {
+      <p class="empty-state">Cargando compras guardadas...</p>
+    } @else if (compras.length === 0) {
+      <p class="empty-state">Aún no hay compras guardadas.</p>
+    } @else {
+      <div class="history-list">
+        @for (compra of compras; track compra.id) {
+          <article class="history-item">
+            <div class="history-heading">
+              <div>
+                <strong>Compra #{{ compra.id }}</strong>
+                <small>{{ compra.fecha | date:'short' }}</small>
+              </div>
+              <strong>S/ {{ compra.total.toFixed(2) }}</strong>
+            </div>
+            <ul>
+              @for (item of compra.items; track item.productoId) {
+                <li>{{ item.cantidad }} x {{ item.producto }}</li>
+              }
+            </ul>
+            <button type="button" class="ghost-button" (click)="exportarComprobante(compra)">
+              Descargar comprobante
+            </button>
+          </article>
+        }
+      </div>
+      <p class="history-note">Compras guardadas localmente; no representan pagos realizados.</p>
+    }
+  </section>
+
+  <section class="order-section" aria-labelledby="order-title">
+    <div class="order-copy">
+      <p class="eyebrow">NUEVO REGISTRO</p>
+      <h2 id="order-title">Registrar pedido</h2>
+      <p>Escribe el detalle del pedido. Sin señal, quedará guardado en este dispositivo.</p>
+    </div>
+
+    <form class="order-form" (ngSubmit)="guardarPedido()">
+      <label for="pedido">Detalle del pedido</label>
+      <textarea
+        id="pedido"
+        name="pedido"
+        [(ngModel)]="pedido"
+        placeholder="Ej.: 2 cajas de Cristal 620 ml para Bodega Central"
+        rows="3"
+        required
+      ></textarea>
+      <button type="submit" [disabled]="!pedido.trim()">
+        {{ online ? 'Registrar pedido' : 'GUARDAR' }}
+        <span aria-hidden="true">→</span>
+      </button>
+    </form>
+
+    @if (errorPedido) {
+      <p class="feedback error" role="alert">{{ errorPedido }}</p>
+    }
+  </section>
+
+  <footer class="footer">
+    <span>Backus Ventas PWA</span>
+    <span>Disponible online y offline</span>
+  </footer>
+</main>
