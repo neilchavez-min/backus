@@ -1,5 +1,6 @@
 import { StorageService } from './storage.service';
 
+// Elimina los datos entre pruebas para que cada caso empiece con una base limpia.
 function eliminarBaseDeDatos(): Promise<void> {
   return new Promise((resolve, reject) => {
     const solicitud = indexedDB.deleteDatabase('backusVentasDB');
@@ -12,6 +13,7 @@ function eliminarBaseDeDatos(): Promise<void> {
 describe('StorageService', () => {
   let storage: StorageService;
 
+  // Crea un servicio nuevo después de limpiar IndexedDB.
   beforeEach(async () => {
     await eliminarBaseDeDatos();
     storage = new StorageService();
@@ -21,6 +23,7 @@ describe('StorageService', () => {
     await eliminarBaseDeDatos();
   });
 
+  // La finalización debe guardar subtotales correctos y limpiar el carrito atómicamente.
   it('should persist purchase lines and clear the cart in IndexedDB', async () => {
     await storage.agregarAlCarrito({
       productoId: 1,
@@ -58,6 +61,7 @@ describe('StorageService', () => {
     expect(Number.isNaN(Date.parse(pedido.fecha))).toBeFalse();
   });
 
+  // Los pedidos manuales también quedan locales, con origen y estado inicial definidos.
   it('should persist a manual order with online origin and pending state', async () => {
     await storage.guardarPedido({
       tipo: 'pedido',
@@ -75,6 +79,7 @@ describe('StorageService', () => {
     expect(pedido.estado).toBe('PENDIENTE');
   });
 
+  // Datos inválidos y pedidos vacíos se rechazan antes de persistir.
   it('should reject invalid line quantities and empty orders', async () => {
     await expectAsync(storage.finalizarCompra([
       {

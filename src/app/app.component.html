@@ -1,4 +1,5 @@
 <main class="page">
+  <!-- Navegación de acceso rápido y estado de conectividad del navegador. -->
   <header class="topbar">
     <a class="brand" href="/" aria-label="Backus Ventas, inicio">
       <span class="brand-mark" aria-hidden="true">B</span>
@@ -19,6 +20,7 @@
     </span>
   </header>
 
+  <!-- Los mensajes anuncian errores y resultados a usuarios de tecnologías de asistencia. -->
   @if (mensaje) {
     <p class="feedback success" role="status" aria-live="polite">{{ mensaje }}</p>
   }
@@ -26,6 +28,7 @@
     <p class="feedback error" role="alert">{{ errorPedido }}</p>
   }
 
+  <!-- Presentación principal y consulta filtrable del catálogo local. -->
   <section class="intro">
     <p class="eyebrow">VENTAS DE CAMPO</p>
     <h1>Tu catálogo, <span>siempre contigo.</span></h1>
@@ -34,6 +37,7 @@
     </p>
   </section>
 
+  <!-- Búsqueda, categoría y controles para agregar productos al carrito. -->
   <section class="catalog-section" aria-labelledby="catalog-title">
     <div class="section-heading">
       <div>
@@ -117,6 +121,7 @@
     }
   </section>
 
+  <!-- Diálogo de carrito: cantidades, eliminación, total y confirmación de compra. -->
   @if (carritoAbierto) {
     <div class="cart-overlay" (click)="cerrarCarrito()" (keydown.escape)="cerrarCarrito()">
       <section
@@ -184,6 +189,7 @@
     </div>
   }
 
+  <!-- Diálogo del historial local con detalle descargable de cada registro. -->
   @if (historialAbierto) {
     <div class="cart-overlay" (click)="cerrarHistorial()" (keydown.escape)="cerrarHistorial()">
       <section
@@ -260,6 +266,7 @@
     </div>
   }
 
+  <!-- Formulario para registrar una observación como pedido manual. -->
   <section class="order-section" aria-labelledby="order-title">
     <div class="order-copy">
       <p class="eyebrow">NUEVO REGISTRO</p>
@@ -285,6 +292,7 @@
 
   </section>
 
+  <!-- Pie de página de la aplicación. -->
   <footer class="footer">
     <span>Backus Ventas PWA</span>
     <span>Disponible online y offline</span>

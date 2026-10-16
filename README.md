@@ -7,7 +7,7 @@ Aplicación web progresiva de práctica para registrar pedidos de vendedores de 
 ## Archivos del taller
 
 1. `src/manifest.webmanifest`: nombre, colores, modo standalone e iconos de la PWA.
-2. `src/assets/data/catalogo.json`: catálogo académico de tres productos.
+2. `src/assets/data/catalogo.json`: catálogo académico local de nueve productos.
 3. `src/app/app.config.ts`: `HttpClient`, rutas y registro del service worker solo en producción.
 4. `src/app/catalogo.service.ts`: tipo `Producto` y consulta HTTP del catálogo.
 5. `ngsw-config.json`: precaché de recursos y caché de datos del catálogo por un día.

@@ -1,3 +1,4 @@
+// Normalización global y valores base para el diseño responsive.
 :root {
   color-scheme: light;
   font-synthesis: none;
@@ -73,6 +74,7 @@ app-root .order-line { display: grid; grid-template-columns: minmax(0, 1fr) auto
 app-root .order-line strong { color: #0033a0; white-space: nowrap; }
 app-root .order-observation { margin: 10px 0; padding: 10px; border-radius: 8px; color: #526078; background: #f5f7fb; font-size: .88rem; overflow-wrap: anywhere; }
 
+// Ajustes de composición para tabletas y pantallas medianas.
 @media (max-width: 900px) {
   app-root .page { width: min(100% - 40px, 760px); }
   app-root .intro { padding: 38px 32px; }
@@ -84,6 +86,7 @@ app-root .order-observation { margin: 10px 0; padding: 10px; border-radius: 8px;
   app-root .order-section { grid-template-columns: 1fr 1.2fr; gap: 16px 22px; }
 }
 
+// Diseño móvil: controles táctiles y diálogos en la parte inferior.
 @media (max-width: 640px) {
   app-root .page { width: min(100% - 28px, 520px); }
   app-root .topbar { min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; padding: 12px 0; }
@@ -124,6 +127,7 @@ app-root .order-observation { margin: 10px 0; padding: 10px; border-radius: 8px;
   app-root .footer { gap: 12px; flex-wrap: wrap; }
 }
 
+// Compactación adicional para teléfonos estrechos.
 @media (max-width: 380px) {
   app-root .page { width: calc(100% - 22px); }
   app-root .topbar { gap: 8px; }
@@ -153,10 +157,12 @@ app-root .order-observation { margin: 10px 0; padding: 10px; border-radius: 8px;
   app-root .intro { padding: 30px 24px; border-radius: 18px; }
 }
 
+// Reduce transiciones y desplazamiento animado según preferencia del sistema.
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
 
+// Barra superior fija y presentación de marca en el encabezado.
 app-root .page.page { width: min(100% - 36px, 1040px); }
 app-root .topbar.topbar {
   position: sticky;

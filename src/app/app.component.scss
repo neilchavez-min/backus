@@ -1,3 +1,4 @@
+// Estilos base del componente y estructura de navegación.
 :host { display: block; min-height: 100vh; color: #17243a; background: #f5f7fb; font-family: "Segoe UI", sans-serif; }
 .page { width: min(100% - 36px, 1040px); margin: auto; }
 .topbar, .brand, .cart-shortcut, .history-shortcut, .connection-badge, .section-heading, .product-actions, .cart-header, .cart-buttons, .cart-item, .cart-total, .history-heading, .footer { display: flex; align-items: center; justify-content: space-between; }
@@ -17,6 +18,7 @@ h1, h2, h3, p { margin-top: 0; }
 h1 { max-width: 680px; margin-bottom: 12px; font-size: clamp(2.2rem, 6vw, 4rem); line-height: 1.08; }
 h1 span, .price { color: #0033a0; }
 .intro-copy, .order-copy > p:last-child { color: #627087; line-height: 1.5; }
+// Catálogo: tarjetas, precios y acciones de compra.
 .catalog-section, .order-section { margin-bottom: 22px; padding: 24px; border: 1px solid #e8ecf2; border-radius: 18px; background: #fff; }
 .section-heading { margin-bottom: 18px; }
 .section-heading h2, .order-copy h2 { margin-bottom: 0; font-size: 1.3rem; }
@@ -34,6 +36,7 @@ h1 span, .price { color: #0033a0; }
 .checkout-button { padding: 9px 12px; color: #fff; background: #0033a0; font-size: .82rem; font-weight: 700; }
 .ghost-button:disabled { opacity: .45; cursor: not-allowed; }
 .checkout-button:disabled { opacity: .5; cursor: not-allowed; }
+// Capas de diálogo para el carrito y el historial.
 .cart-list { display: grid; gap: 12px; }
 .cart-overlay { position: fixed; z-index: 10; inset: 0; display: grid; place-items: center; padding: 20px; background: #101b2bb3; }
 .cart-dialog { width: min(100%, 560px); max-height: min(80vh, 720px); overflow: auto; padding: 24px; border: 1px solid #e8ecf2; border-radius: 18px; background: #fff; box-shadow: 0 24px 80px #101b2b40; }
@@ -58,6 +61,7 @@ h1 span, .price { color: #0033a0; }
 .history-heading > div { display: grid; gap: 4px; }
 .history-item ul { display: grid; gap: 4px; padding-left: 20px; color: #526078; font-size: .88rem; }
 .history-note { margin: 14px 0 0; color: #718097; font-size: .8rem; }
+// Formulario manual, feedback visual y pie de página.
 .order-section { display: grid; grid-template-columns: .8fr 1.2fr; gap: 18px 30px; }
 .order-copy > p:last-child { margin: 10px 0 0; font-size: .9rem; }
 .order-form { display: grid; gap: 10px; }

@@ -6,6 +6,19 @@
 
 La aplicación funciona sin backend. Los datos de catálogo se distribuyen como un archivo JSON; los cambios del usuario se guardan en IndexedDB. Por ese motivo, finalizar una compra registra localmente un pedido pendiente: no cobra, no envía información a Backus ni sincroniza datos con un servidor.
 
+### Resultado de la revisión técnica
+
+Revisión realizada el 16 de octubre de 2026 sobre el código, la configuración, la documentación y las pruebas del workspace.
+
+| Verificación | Resultado |
+|---|---|
+| Compilación de producción (`npm run build`) | Correcta; bundle inicial de 343.12 kB sin superar el límite de advertencia de 500 kB. |
+| Pruebas unitarias (`npm test -- --watch=false`) | 8 de 9 pruebas pasan. Una falla al limpiar IndexedDB porque la base sigue abierta (`La base de datos de prueba sigue abierta`). |
+| Catálogo fuente | 9 productos; la documentación anterior indicaba 3. |
+| Alcance de datos | Catálogo estático; carrito e historial guardados únicamente en IndexedDB del dispositivo. No hay backend ni sincronización. |
+
+**Evaluación general:** la compilación y el flujo principal están implementados para una demostración offline-first. Antes de considerar la calidad verificada, se debe resolver la prueba bloqueada por la conexión a IndexedDB y mejorar la gestión de foco de los diálogos para usuarios de teclado y tecnologías de asistencia. La indicación online/offline representa el estado de conectividad del navegador, no la disponibilidad de un servidor.
+
 ## 2. Objetivos
 
 - Mostrar un catálogo de productos incluso después de que sus recursos hayan sido almacenados en caché.
@@ -45,13 +58,19 @@ La aplicación funciona sin backend. Los datos de catálogo se distribuyen como 
 
 ## 5. Catálogo
 
-El catálogo está en `src/assets/data/catalogo.json` y contiene estos productos ficticios de práctica:
+El catálogo está en `src/assets/data/catalogo.json` y contiene nueve productos de práctica:
 
 | ID | Producto | Categoría | Precio |
 |---:|---|---|---:|
 | 1 | Cristal 620 ml | Cerveza | S/ 7.50 |
 | 2 | Pilsen Callao 620 ml | Cerveza | S/ 8.00 |
 | 3 | Cusqueña 620 ml | Cerveza | S/ 9.00 |
+| 4 | Cristal lata 355 ml | Cerveza | S/ 4.50 |
+| 5 | Pilsen Callao lata 355 ml | Cerveza | S/ 5.00 |
+| 6 | Cusqueña Dorada 310 ml | Cerveza | S/ 5.50 |
+| 7 | Arequipeña 620 ml | Cerveza | S/ 7.00 |
+| 8 | San Juan 620 ml | Cerveza | S/ 7.00 |
+| 9 | Pilsen Callao 1 L | Cerveza | S/ 11.50 |
 
 `CatalogoService.obtenerCatalogo()` solicita `assets/data/catalogo.json` mediante `HttpClient`. Angular Service Worker configura caché para `/assets/data/catalogo.json` (y `/data/catalogo.json`) con estrategia `performance`, máximo 20 respuestas y duración de un día. Para que el caché offline esté disponible, primero se debe abrir la aplicación con conexión y permitir que el Service Worker almacene los recursos.
 
@@ -167,7 +186,9 @@ Ejecutar las pruebas unitarias del workspace:
 npx ng test --watch=false
 ```
 
-Las pruebas verifican búsqueda insensible a mayúsculas, combinación con categoría, validación de cantidades, guardado offline con origen explícito, cálculos de subtotales/total en IndexedDB, lectura del historial y persistencia atómica del pedido y vaciado del carrito.
+Las pruebas verifican búsqueda insensible a mayúsculas, combinación con categoría, validación de cantidades, guardado offline con origen explícito, cálculos de subtotales/total en IndexedDB, lectura del historial y persistencia del pedido junto con el vaciado del carrito.
+
+En la revisión del 16 de octubre de 2026, la suite ejecutó 9 pruebas: 8 pasaron y 1 falló al intentar borrar la base de datos de prueba mientras seguía abierta. Por ello, la suite no está completamente verde; debe revisarse el cierre de conexiones de IndexedDB y la limpieza de la prueba antes de usar este resultado como validación continua.
 
 ## 13. Alcance y limitaciones
 
@@ -177,6 +198,30 @@ Las pruebas verifican búsqueda insensible a mayúsculas, combinación con categ
 - No se procesan pagos, no se confirma stock y los precios son datos ficticios de uso académico.
 - Para usar la PWA offline, es necesario haber cargado previamente la aplicación y el catálogo con conexión en el mismo origen.
 
-## 14. Conclusión
+## 14. Evaluación y recomendaciones
+
+### Fortalezas observadas
+
+- Separación clara entre presentación, consulta de catálogo y persistencia local.
+- TypeScript y plantillas Angular configurados en modo estricto.
+- La compra y el vaciado del carrito se realizan en una misma transacción de IndexedDB.
+- Las entradas de cantidades y las líneas de compra se validan antes de guardarse; se recalculan subtotales y totales.
+- Los errores de lectura y escritura se presentan en la interfaz, y el usuario recibe aviso de que los pedidos no se envían al servidor.
+- La compilación de producción genera un bundle inicial por debajo del presupuesto configurado.
+
+### Hallazgos y acciones recomendadas
+
+| Prioridad | Hallazgo | Recomendación |
+|---|---|---|
+| Alta | Una de las 9 pruebas falla porque la limpieza de IndexedDB detecta una conexión aún abierta. | Identificar el ciclo de vida de la conexión que permanece abierta; cerrar las conexiones de forma consistente y dejar la prueba repetible. |
+| Media | Los diálogos tienen `role="dialog"` y `aria-modal`, pero no se observa gestión de foco al abrir/cerrar ni confinamiento del foco dentro del diálogo. | Enfocar el diálogo o su primer control al abrirlo, mantener la navegación por teclado dentro de él y devolver el foco al control que lo abrió. Verificar también teclado y lector de pantalla. |
+| Media | El estado “CONECTADO” solo refleja `navigator.onLine`; no comprueba acceso a un servidor. | Mantener claro en interfaz y documentación que indica conectividad del navegador y no sincronización ni disponibilidad del servicio. |
+| Baja | La documentación del README describía tres productos, aunque el catálogo contiene nueve. | Corregido en esta revisión; conservar sincronizados el catálogo y los documentos cuando cambien los datos. |
+
+### Alcance de esta revisión
+
+Se revisaron los componentes principales, los servicios de catálogo y almacenamiento, configuración Angular y del Service Worker, manifest, catálogo, pruebas unitarias y documentación. Se ejecutaron la compilación de producción y la suite unitaria. No se realizó una prueba manual en dispositivos, auditoría automatizada de accesibilidad ni validación de una integración con backend, porque esta última no forma parte del proyecto actual.
+
+## 15. Conclusión
 
 Backus Ventas PWA muestra cómo una interfaz Angular puede mantener una experiencia útil ante interrupciones de conectividad: el Service Worker conserva los recursos de la aplicación y el catálogo, mientras IndexedDB mantiene el carrito y los pedidos en el dispositivo. La solución es adecuada como demostración frontend offline-first y no requiere backend para el alcance actual.

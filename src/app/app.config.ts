@@ -5,6 +5,7 @@ import { provideServiceWorker } from '@angular/service-worker';
 
 import { routes } from './app.routes';
 
+// Registra los servicios compartidos; el Service Worker se activa solo fuera de desarrollo.
 export const appConfig: ApplicationConfig = {
   providers: [
     provideHttpClient(),

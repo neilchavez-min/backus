@@ -20,6 +20,8 @@ import {
 })
 export class AppComponent implements OnInit {
   readonly title = 'Backus Ventas PWA';
+
+  // Estado de pantalla: catálogo, filtros, datos guardados y mensajes visibles.
   online = navigator.onLine;
   productos: Producto[] = [];
   cantidadesSeleccionadas: Record<number, number | null> = {};
@@ -42,6 +44,7 @@ export class AppComponent implements OnInit {
     private readonly storageService: StorageService
   ) {}
 
+  /** Suma los subtotales del carrito y redondea el resultado a dos decimales. */
   get totalCarrito(): number {
     return this.redondearImporte(
       this.carrito.reduce(
@@ -51,15 +54,18 @@ export class AppComponent implements OnInit {
     );
   }
 
+  /** Devuelve el total de unidades, no solo la cantidad de productos distintos. */
   get cantidadCarrito(): number {
     return this.carrito.reduce((total, item) => total + item.cantidad, 0);
   }
 
+  /** Genera las categorías únicas del catálogo en orden alfabético español. */
   get categorias(): string[] {
     return [...new Set(this.productos.map((producto) => producto.categoria))]
       .sort((a, b) => a.localeCompare(b, 'es'));
   }
 
+  /** Aplica conjuntamente la búsqueda por nombre y el filtro de categoría. */
   get productosFiltrados(): Producto[] {
     const busqueda = this.busqueda.trim().toLocaleLowerCase('es');
     return this.productos.filter((producto) => {
@@ -70,6 +76,7 @@ export class AppComponent implements OnInit {
     });
   }
 
+  /** Abre un solo diálogo a la vez y muestra el carrito. */
   abrirCarrito(): void {
     this.historialAbierto = false;
     this.carritoAbierto = true;
@@ -79,6 +86,7 @@ export class AppComponent implements OnInit {
     this.carritoAbierto = false;
   }
 
+  /** Abre el historial y cierra el carrito si estaba visible. */
   abrirHistorial(): void {
     this.carritoAbierto = false;
     this.historialAbierto = true;
@@ -108,6 +116,7 @@ export class AppComponent implements OnInit {
     this.cargarHistorial();
   }
 
+  /** Refleja en la interfaz el evento de conexión reportado por el navegador. */
   @HostListener('window:online')
   actualizarConexionOnline(): void {
     this.online = true;
@@ -128,6 +137,7 @@ export class AppComponent implements OnInit {
     }
   }
 
+  /** Valida y persiste unidades seleccionadas; después vuelve a leer el carrito. */
   async agregarAlCarrito(
     producto: Producto,
     cantidad = this.cantidadesSeleccionadas[producto.id] ?? 1
@@ -160,6 +170,7 @@ export class AppComponent implements OnInit {
     }
   }
 
+  /** Vacía IndexedDB y actualiza el estado local solo si la operación termina bien. */
   async limpiarCarrito(): Promise<void> {
     try {
       await this.storageService.limpiarCarrito();
@@ -173,6 +184,7 @@ export class AppComponent implements OnInit {
     }
   }
 
+  /** Actualiza la cantidad del artículo sin permitir valores inferiores a uno. */
   async cambiarCantidad(item: CarritoItem, cambio: number): Promise<void> {
     const cantidad = item.cantidad + cambio;
     if (cantidad < 1) {
@@ -191,6 +203,7 @@ export class AppComponent implements OnInit {
     }
   }
 
+  /** Elimina un artículo y sincroniza la vista con el contenido persistido. */
   async quitarProducto(item: CarritoItem): Promise<void> {
     try {
       await this.storageService.quitarDelCarrito(item.productoId);
@@ -204,6 +217,7 @@ export class AppComponent implements OnInit {
     }
   }
 
+  /** Lee los registros guardados y expone errores de carga en el diálogo. */
   async cargarHistorial(): Promise<void> {
     this.cargandoHistorial = true;
     try {
@@ -218,6 +232,7 @@ export class AppComponent implements OnInit {
     }
   }
 
+  /** Valida, confirma y guarda la compra; IndexedDB persiste compra y vaciado atómicamente. */
   async finalizarCompra(): Promise<void> {
     if (this.procesandoCompra) {
       return;
@@ -282,6 +297,7 @@ export class AppComponent implements OnInit {
     }
   }
 
+  /** Descarga un resumen de texto local que explícitamente no acredita un pago. */
   exportarComprobante(pedido: PedidoGuardado): void {
     const lineas = [
       'BACKUS VENTAS - COMPROBANTE LOCAL',
@@ -309,6 +325,7 @@ export class AppComponent implements OnInit {
     window.setTimeout(() => URL.revokeObjectURL(url), 0);
   }
 
+  /** Registra una observación manual como pedido pendiente en el almacenamiento local. */
   async guardarPedido(): Promise<void> {
     const detalle = this.pedido.trim();
     if (!detalle) {
@@ -338,12 +355,14 @@ export class AppComponent implements OnInit {
     }
   }
 
+  /** Evita presentar el guardado local como una sincronización con un servidor. */
   private mensajePersistencia(origen: Exclude<OrigenPedido, 'NO REGISTRADO'>): string {
     return origen === 'OFFLINE'
       ? 'Pedido guardado en este dispositivo con estado PENDIENTE. No se envió al servidor.'
       : 'Pedido guardado en IndexedDB con estado PENDIENTE. No hay sincronización con servidor configurada.';
   }
 
+  /** Evita residuos de coma flotante en importes mostrados y persistidos. */
   private redondearImporte(importe: number): number {
     return Math.round((importe + Number.EPSILON) * 100) / 100;
   }

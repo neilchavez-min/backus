@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 
+/** Producto almacenado en el carrito persistente del navegador. */
 export interface CarritoItem {
   productoId: number;
   producto: string;
@@ -8,6 +9,7 @@ export interface CarritoItem {
   cantidad: number;
 }
 
+/** Línea normalizada que se conserva como parte de una compra o pedido. */
 export interface LineaPedido {
   productoId: number;
   producto: string;
@@ -16,9 +18,11 @@ export interface LineaPedido {
   subtotal: number;
 }
 
+/** Estados previstos para los registros, incluida una futura sincronización. */
 export type EstadoPedido = 'PENDIENTE' | 'SINCRONIZADO' | 'ERROR';
 export type OrigenPedido = 'ONLINE' | 'OFFLINE' | 'NO REGISTRADO';
 
+/** Forma canónica de un registro leído desde IndexedDB. */
 export interface PedidoGuardado {
   id: number;
   tipo: 'pedido' | 'compra';
@@ -41,6 +45,7 @@ export class StorageService {
   private readonly nombreStore = 'pedidos';
   private readonly nombreStoreCarrito = 'carrito';
 
+  /** Abre la base local y crea los almacenes cuando se crea o actualiza su versión. */
   abrirDB(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
       const solicitud = indexedDB.open(this.nombreDB, this.versionDB);
@@ -69,6 +74,7 @@ export class StorageService {
     });
   }
 
+  /** Valida y persiste un pedido manual; IndexedDB asigna id, fecha y estado inicial. */
   async guardarPedido(pedido: PedidoNuevo): Promise<IDBValidKey> {
     const lineas = this.validarLineas(pedido.lineas);
     const observacion = pedido.observacion?.trim();
@@ -118,6 +124,7 @@ export class StorageService {
     });
   }
 
+  /** Guarda la compra y limpia el carrito en una única transacción de escritura. */
   async finalizarCompra(lineasPedido: LineaPedido[], origen: Exclude<OrigenPedido, 'NO REGISTRADO'>): Promise<IDBValidKey> {
     if (origen !== 'ONLINE' && origen !== 'OFFLINE') {
       throw new Error('El origen del pedido no es válido.');
@@ -163,6 +170,7 @@ export class StorageService {
     });
   }
 
+  /** Añade unidades al producto existente o crea una entrada nueva en el carrito. */
   async agregarAlCarrito(item: CarritoItem): Promise<void> {
     const db = await this.abrirDB();
 
@@ -202,6 +210,7 @@ export class StorageService {
     });
   }
 
+  /** Devuelve todas las entradas actualmente guardadas en el carrito. */
   async listarCarrito(): Promise<CarritoItem[]> {
     const db = await this.abrirDB();
 
@@ -220,6 +229,7 @@ export class StorageService {
     });
   }
 
+  /** Reemplaza la cantidad del producto y rechaza cantidades no enteras o menores a uno. */
   async actualizarCantidad(productoId: number, cantidad: number): Promise<void> {
     if (!Number.isInteger(cantidad) || cantidad < 1) {
       throw new RangeError('La cantidad debe ser un entero mayor que cero.');
@@ -255,6 +265,7 @@ export class StorageService {
     });
   }
 
+  /** Elimina del carrito el producto identificado por su id. */
   async quitarDelCarrito(productoId: number): Promise<void> {
     const db = await this.abrirDB();
 
@@ -276,6 +287,7 @@ export class StorageService {
     });
   }
 
+  /** Lee, normaliza y ordena los registros más recientes primero. */
   async listarPedidos(): Promise<PedidoGuardado[]> {
     const db = await this.abrirDB();
 
@@ -298,6 +310,7 @@ export class StorageService {
     });
   }
 
+  /** Comprueba los datos de cada línea y recalcula su subtotal desde precio y cantidad. */
   private validarLineas(lineas: LineaPedido[]): LineaPedido[] {
     if (!Array.isArray(lineas)) {
       throw new TypeError('Las líneas del pedido deben ser una lista.');
@@ -325,14 +338,17 @@ export class StorageService {
     });
   }
 
+  /** Obtiene el total a partir de los subtotales ya normalizados. */
   private calcularTotal(lineas: LineaPedido[]): number {
     return this.redondearImporte(lineas.reduce((total, linea) => total + linea.subtotal, 0));
   }
 
+  /** Redondea un importe monetario a dos decimales compensando precisión binaria. */
   private redondearImporte(importe: number): number {
     return Math.round((importe + Number.EPSILON) * 100) / 100;
   }
 
+  /** Adapta registros actuales y antiguos a la forma que consume la interfaz. */
   private normalizarPedido(registro: Record<string, unknown>): PedidoGuardado | null {
     const id = registro['id'];
     if (typeof id !== 'number' || !Number.isInteger(id)) {
@@ -410,6 +426,7 @@ export class StorageService {
     };
   }
 
+  /** Borra todas las entradas del carrito conservando los pedidos guardados. */
   async limpiarCarrito(): Promise<void> {
     const db = await this.abrirDB();
 

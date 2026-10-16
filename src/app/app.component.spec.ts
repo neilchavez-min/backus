@@ -7,6 +7,7 @@ import { StorageService } from './storage.service';
 describe('AppComponent', () => {
   let storage: jasmine.SpyObj<StorageService>;
 
+  // Aísla el componente de IndexedDB y deja cada prueba con un almacenamiento vacío.
   beforeEach(async () => {
     storage = jasmine.createSpyObj<StorageService>('StorageService', [
       'listarCarrito',
@@ -31,6 +32,8 @@ describe('AppComponent', () => {
     }).compileComponents();
   });
 
+  // Comprueba que el catálogo, el estado de conexión y los accesos a carrito e historial
+  // se muestran y abren correctamente, y que el checkout queda deshabilitado sin productos.
   it('should render the catalog, cart controls, and connection state', async () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
@@ -64,6 +67,7 @@ describe('AppComponent', () => {
     http.verify();
   });
 
+  // Verifica que una compra confirmada se guarde con origen offline y vacíe el carrito.
   it('should confirm, save, and clear a completed cart purchase', async () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
@@ -97,6 +101,7 @@ describe('AppComponent', () => {
     http.verify();
   });
 
+  // Comprueba que la búsqueda no distingue mayúsculas y se combina con el filtro de categoría.
   it('should combine case-insensitive name search with category filter', async () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
@@ -116,6 +121,7 @@ describe('AppComponent', () => {
     http.verify();
   });
 
+  // Asegura que una cantidad cero se rechace antes de invocar el servicio de almacenamiento.
   it('should reject non-integer or non-positive product quantities', async () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
@@ -136,6 +142,7 @@ describe('AppComponent', () => {
     http.verify();
   });
 
+  // Verifica que un pedido manual sin conexión conserve su origen y quede pendiente localmente.
   it('should persist a manually registered offline order with its origin', async () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
@@ -161,6 +168,7 @@ describe('AppComponent', () => {
     http.verify();
   });
 
+  // Comprueba que cancelar la confirmación no guarde la compra ni modifique el carrito.
   it('should keep the cart when the purchase confirmation is cancelled', async () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
