@@ -50,6 +50,13 @@ describe('AppComponent', () => {
     expect(compiled.querySelector('.cart-shortcut')?.textContent).toContain('Carrito');
     expect(compiled.querySelector('.history-shortcut')?.textContent).toContain('Historial');
     expect(compiled.querySelector('.cart-dialog')).toBeNull();
+    expect(compiled.querySelector('.history-dialog')).toBeNull();
+    (compiled.querySelector('.history-shortcut') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(compiled.querySelector('[role="dialog"] h2')?.textContent).toContain('Historial de pedidos');
+    (compiled.querySelector('[aria-label="Cerrar historial"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(compiled.querySelector('.history-dialog')).toBeNull();
     (compiled.querySelector('.cart-shortcut') as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(compiled.querySelector('[role="dialog"] h2')?.textContent).toContain('Carrito de compras');

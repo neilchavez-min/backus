@@ -35,6 +35,7 @@ export class AppComponent implements OnInit {
   cargandoHistorial = true;
   procesandoCompra = false;
   carritoAbierto = false;
+  historialAbierto = false;
 
   constructor(
     private readonly catalogoService: CatalogoService,
@@ -70,11 +71,21 @@ export class AppComponent implements OnInit {
   }
 
   abrirCarrito(): void {
+    this.historialAbierto = false;
     this.carritoAbierto = true;
   }
 
   cerrarCarrito(): void {
     this.carritoAbierto = false;
+  }
+
+  abrirHistorial(): void {
+    this.carritoAbierto = false;
+    this.historialAbierto = true;
+  }
+
+  cerrarHistorial(): void {
+    this.historialAbierto = false;
   }
 
   ngOnInit(): void {

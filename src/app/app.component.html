@@ -9,10 +9,10 @@
       Carrito
       <span class="cart-count">{{ cantidadCarrito }}</span>
     </button>
-    <a class="history-shortcut" href="#historial">
+    <button type="button" class="history-shortcut" (click)="abrirHistorial()">
       Historial
       <span class="cart-count">{{ pedidos.length }}</span>
-    </a>
+    </button>
     <span class="connection-badge" [class.online]="online" [class.offline]="!online">
       <span class="connection-dot" aria-hidden="true"></span>
       {{ online ? 'CONECTADO' : 'SIN CONEXIÓN' }}
@@ -184,66 +184,81 @@
     </div>
   }
 
-  <section class="history-section" id="historial" aria-labelledby="history-title">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">EN ESTE DISPOSITIVO</p>
-        <h2 id="history-title">Historial de pedidos</h2>
-      </div>
-      <button type="button" class="ghost-button" (click)="cargarHistorial()" [disabled]="cargandoHistorial">
-        {{ cargandoHistorial ? 'Actualizando...' : 'Actualizar' }}
-      </button>
-    </div>
-    @if (errorHistorial) {
-      <p class="feedback error" role="alert">{{ errorHistorial }}</p>
-    } @else if (cargandoHistorial) {
-      <p class="empty-state">Cargando compras guardadas...</p>
-    } @else if (pedidos.length === 0) {
-      <p class="empty-state">Aún no hay pedidos guardados.</p>
-    } @else {
-      <div class="history-list">
-        @for (pedidoGuardado of pedidos; track pedidoGuardado.id) {
-          <article class="history-item">
-            <div class="history-heading">
-              <div>
-                <strong>{{ pedidoGuardado.tipo === 'compra' ? 'Pedido del carrito' : 'Pedido' }} #{{ pedidoGuardado.id }}</strong>
-                <small>
-                  @if (pedidoGuardado.fecha === 'Fecha no registrada') {
-                    {{ pedidoGuardado.fecha }}
-                  } @else {
-                    {{ pedidoGuardado.fecha | date:'short' }}
-                  }
-                </small>
-              </div>
-              <strong>S/ {{ pedidoGuardado.total.toFixed(2) }}</strong>
-            </div>
-            <div class="order-metadata">
-              <span class="status-badge">{{ pedidoGuardado.estado }}</span>
-              <span>Origen: {{ pedidoGuardado.origen }}</span>
-            </div>
-            @if (pedidoGuardado.lineas.length > 0) {
-              <div class="order-lines">
-                @for (linea of pedidoGuardado.lineas; track linea.productoId) {
-                  <div class="order-line">
-                    <span>{{ linea.producto }}</span>
-                    <span>{{ linea.cantidad }} × S/ {{ linea.precioUnitario.toFixed(2) }}</span>
-                    <strong>S/ {{ linea.subtotal.toFixed(2) }}</strong>
+  @if (historialAbierto) {
+    <div class="cart-overlay" (click)="cerrarHistorial()" (keydown.escape)="cerrarHistorial()">
+      <section
+        class="history-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="history-title"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="section-heading cart-header">
+          <div>
+            <p class="eyebrow">EN ESTE DISPOSITIVO</p>
+            <h2 id="history-title">Historial de pedidos</h2>
+          </div>
+          <button type="button" class="close-cart" (click)="cerrarHistorial()" aria-label="Cerrar historial">
+            ×
+          </button>
+        </div>
+        <div class="history-actions">
+          <button type="button" class="ghost-button" (click)="cargarHistorial()" [disabled]="cargandoHistorial">
+            {{ cargandoHistorial ? 'Actualizando...' : 'Actualizar' }}
+          </button>
+        </div>
+        @if (errorHistorial) {
+          <p class="feedback error" role="alert">{{ errorHistorial }}</p>
+        } @else if (cargandoHistorial) {
+          <p class="empty-state">Cargando compras guardadas...</p>
+        } @else if (pedidos.length === 0) {
+          <p class="empty-state">Aún no hay pedidos guardados.</p>
+        } @else {
+          <div class="history-list">
+            @for (pedidoGuardado of pedidos; track pedidoGuardado.id) {
+              <article class="history-item">
+                <div class="history-heading">
+                  <div>
+                    <strong>{{ pedidoGuardado.tipo === 'compra' ? 'Pedido del carrito' : 'Pedido' }} #{{ pedidoGuardado.id }}</strong>
+                    <small>
+                      @if (pedidoGuardado.fecha === 'Fecha no registrada') {
+                        {{ pedidoGuardado.fecha }}
+                      } @else {
+                        {{ pedidoGuardado.fecha | date:'short' }}
+                      }
+                    </small>
+                  </div>
+                  <strong>S/ {{ pedidoGuardado.total.toFixed(2) }}</strong>
+                </div>
+                <div class="order-metadata">
+                  <span class="status-badge">{{ pedidoGuardado.estado }}</span>
+                  <span>Origen: {{ pedidoGuardado.origen }}</span>
+                </div>
+                @if (pedidoGuardado.lineas.length > 0) {
+                  <div class="order-lines">
+                    @for (linea of pedidoGuardado.lineas; track linea.productoId) {
+                      <div class="order-line">
+                        <span>{{ linea.producto }}</span>
+                        <span>{{ linea.cantidad }} × S/ {{ linea.precioUnitario.toFixed(2) }}</span>
+                        <strong>S/ {{ linea.subtotal.toFixed(2) }}</strong>
+                      </div>
+                    }
                   </div>
                 }
-              </div>
+                @if (pedidoGuardado.observacion) {
+                  <p class="order-observation">{{ pedidoGuardado.observacion }}</p>
+                }
+                <button type="button" class="ghost-button" (click)="exportarComprobante(pedidoGuardado)">
+                  Descargar detalle
+                </button>
+              </article>
             }
-            @if (pedidoGuardado.observacion) {
-              <p class="order-observation">{{ pedidoGuardado.observacion }}</p>
-            }
-            <button type="button" class="ghost-button" (click)="exportarComprobante(pedidoGuardado)">
-              Descargar detalle
-            </button>
-          </article>
+          </div>
+          <p class="history-note">Los registros se conservan en este dispositivo con estado PENDIENTE. No se envían a un servidor.</p>
         }
-      </div>
-      <p class="history-note">Los registros se conservan en este dispositivo con estado PENDIENTE. No se envían a un servidor.</p>
-    }
-  </section>
+      </section>
+    </div>
+  }
 
   <section class="order-section" aria-labelledby="order-title">
     <div class="order-copy">
