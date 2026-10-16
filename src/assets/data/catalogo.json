@@ -16,5 +16,41 @@
     "producto": "Cusqueña 620 ml",
     "categoria": "Cerveza",
     "precio": 9
+  },
+  {
+    "id": 4,
+    "producto": "Cristal lata 355 ml",
+    "categoria": "Cerveza",
+    "precio": 4.5
+  },
+  {
+    "id": 5,
+    "producto": "Pilsen Callao lata 355 ml",
+    "categoria": "Cerveza",
+    "precio": 5
+  },
+  {
+    "id": 6,
+    "producto": "Cusqueña Dorada 310 ml",
+    "categoria": "Cerveza",
+    "precio": 5.5
+  },
+  {
+    "id": 7,
+    "producto": "Arequipeña 620 ml",
+    "categoria": "Cerveza",
+    "precio": 7
+  },
+  {
+    "id": 8,
+    "producto": "San Juan 620 ml",
+    "categoria": "Cerveza",
+    "precio": 7
+  },
+  {
+    "id": 9,
+    "producto": "Pilsen Callao 1 L",
+    "categoria": "Cerveza",
+    "precio": 11.5
   }
 ]

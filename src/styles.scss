@@ -13,6 +13,7 @@
 html {
   min-width: 320px;
   scroll-behavior: smooth;
+  overflow-x: clip;
 }
 
 body {
@@ -58,6 +59,19 @@ app-root .add-button:hover, app-root .checkout-button:not(:disabled):hover, app-
 app-root .cart-dialog { border-color: #f0c879; box-shadow: 0 28px 90px #07152f66; }
 app-root .cart-dialog .eyebrow { color: #a27b2c; }
 app-root .cart-total strong, app-root .history-heading > strong { color: #0033a0; }
+app-root .catalog-filters { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(180px, .65fr) auto; align-items: end; gap: 12px; margin: 0 0 18px; }
+app-root .catalog-filters label, app-root .product-quantity { display: grid; gap: 6px; color: #526078; font-size: .78rem; font-weight: 700; }
+app-root .catalog-filters input, app-root .catalog-filters select, app-root .product-quantity input { min-width: 0; min-height: 40px; padding: 8px 10px; border: 1px solid #dce2ec; border-radius: 9px; color: #17243a; background: #fff; font: inherit; }
+app-root .catalog-filters input:focus, app-root .catalog-filters select:focus, app-root .product-quantity input:focus { border-color: #0033a0; outline: 3px solid #0033a01a; }
+app-root .product-quantity { grid-template-columns: auto 72px; align-items: center; }
+app-root .product-quantity input { min-height: 34px; padding: 5px 8px; }
+app-root .filter-empty { grid-column: 1 / -1; }
+app-root .order-metadata { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 12px 0; color: #718097; font-size: .78rem; }
+app-root .status-badge { padding: 5px 9px; border-radius: 99px; color: #865e12; background: #fff2d3; font-size: .7rem; font-weight: 800; }
+app-root .order-lines { display: grid; gap: 8px; margin: 12px 0; }
+app-root .order-line { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; color: #526078; font-size: .82rem; }
+app-root .order-line strong { color: #0033a0; white-space: nowrap; }
+app-root .order-observation { margin: 10px 0; padding: 10px; border-radius: 8px; color: #526078; background: #f5f7fb; font-size: .88rem; overflow-wrap: anywhere; }
 
 @media (max-width: 900px) {
   app-root .page { width: min(100% - 40px, 760px); }
@@ -65,6 +79,8 @@ app-root .cart-total strong, app-root .history-heading > strong { color: #0033a0
   app-root .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   app-root .product-card { grid-template-columns: 40px minmax(0, 1fr); }
   app-root .product-actions { grid-column: 2; flex-direction: row; width: 100%; align-items: center; }
+  app-root .catalog-filters { grid-template-columns: minmax(0, 1fr) minmax(0, .8fr); }
+  app-root .catalog-filters .ghost-button { grid-column: 1 / -1; justify-self: start; }
   app-root .order-section { grid-template-columns: 1fr 1.2fr; gap: 16px 22px; }
 }
 
@@ -81,8 +97,12 @@ app-root .cart-total strong, app-root .history-heading > strong { color: #0033a0
   app-root .section-heading { gap: 12px; }
   app-root .section-heading h2, app-root .order-copy h2 { font-size: 1.15rem; }
   app-root .product-grid, app-root .order-section { grid-template-columns: 1fr; }
+  app-root .catalog-filters { grid-template-columns: 1fr; }
+  app-root .catalog-filters .ghost-button { grid-column: auto; justify-self: stretch; min-height: 42px; }
   app-root .product-card { grid-template-columns: 40px minmax(0, 1fr); }
-  app-root .product-actions { grid-column: 2; flex-direction: row; width: 100%; align-items: center; }
+  app-root .product-actions { grid-column: 2; flex-direction: row; width: 100%; align-items: center; flex-wrap: wrap; }
+  app-root .product-quantity { grid-template-columns: auto 68px; }
+  app-root .product-quantity input { min-height: 42px; }
   app-root .add-button { min-height: 42px; padding-inline: 12px; }
   app-root .cart-overlay { align-items: end; overflow-y: auto; padding: 12px 12px max(12px, env(safe-area-inset-bottom)); }
   app-root .cart-dialog { width: 100%; max-height: min(88dvh, 760px); padding: 20px 18px; border-radius: 20px 20px 16px 16px; }
@@ -96,6 +116,8 @@ app-root .cart-total strong, app-root .history-heading > strong { color: #0033a0
   app-root .cart-dialog .cart-buttons { position: sticky; bottom: -20px; margin: 16px -18px -20px; padding: 14px 18px max(14px, env(safe-area-inset-bottom)); border-top: 1px solid #edf0f5; background: #fff; }
   app-root .cart-buttons button, app-root .history-item > button { min-height: 42px; }
   app-root .history-heading { gap: 12px; }
+  app-root .order-line { grid-template-columns: 1fr auto; }
+  app-root .order-line strong { grid-column: 2; }
   app-root .history-item { overflow-wrap: anywhere; }
   app-root .order-form textarea { min-height: 104px; font-size: 16px; }
   app-root .order-form button { min-height: 46px; }
@@ -118,6 +140,8 @@ app-root .cart-total strong, app-root .history-heading > strong { color: #0033a0
   app-root .cart-dialog .cart-buttons { margin-inline: -14px; padding-inline: 14px; }
   app-root .cart-buttons { gap: 8px; }
   app-root .cart-buttons button { padding-inline: 10px; font-size: .78rem; }
+  app-root .product-actions { align-items: flex-start; }
+  app-root .add-button { white-space: normal; }
 }
 
 ::selection {
@@ -131,4 +155,529 @@ app-root .cart-total strong, app-root .history-heading > strong { color: #0033a0
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
+
+app-root .page.page { width: min(100% - 36px, 1040px); }
+app-root .topbar.topbar {
+  position: sticky;
+  z-index: 5;
+  top: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  gap: 12px;
+  width: 100%;
+  min-height: 68px;
+  margin: 0;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 0 0 14px 14px;
+  color: #fff;
+  background: linear-gradient(110deg, #06183e, #0033a0 72%, #1749b8);
+  clip-path: inset(0 -100vmax);
+  box-shadow: 0 5px 18px #06183e2b, 0 0 0 100vmax #06183e;
+}
+app-root .brand.brand { min-width: 0; color: #fff; }
+app-root .brand-mark.brand-mark { color: #f0c879; background: #ffffff1c; box-shadow: inset 0 0 0 1px #ffffff30; }
+app-root .cart-shortcut.cart-shortcut, app-root .history-shortcut.history-shortcut {
+  min-height: 42px;
+  padding: 8px 12px;
+  border-color: #ffffff42;
+  color: #fff;
+  background: #ffffff14;
+}
+app-root .connection-badge.connection-badge { justify-content: center; min-height: 38px; white-space: nowrap; }
+app-root .intro.intro { margin-top: 20px; padding: clamp(28px, 5vw, 48px); border: 1px solid #ffffff; }
+app-root .intro.intro h1 span { color: #f0c879; }
+app-root .product-card.product-card { grid-template-columns: 44px minmax(0, 1fr) auto; min-width: 0; }
+app-root .product-icon.product-icon { flex-basis: 44px; height: 44px; }
+app-root .add-button.add-button, app-root .checkout-button.checkout-button,
+app-root .ghost-button.ghost-button, app-root .order-form.order-form.order-form button { min-height: 42px; }
+
+@media (max-width: 900px) {
+  app-root .page.page { width: min(100% - 32px, 760px); }
+  app-root .topbar.topbar { padding-inline: 16px; }
+  app-root .product-grid.product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  app-root .page.page { width: min(100% - 24px, 520px); }
+  app-root .topbar.topbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 10px;
+    min-height: 0;
+    padding: 10px 12px;
+  }
+  app-root .brand.brand { font-size: .98rem; }
+  app-root .cart-shortcut.cart-shortcut { justify-self: end; }
+  app-root .history-shortcut.history-shortcut { justify-self: start; }
+  app-root .connection-badge.connection-badge {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+    min-height: 34px;
+    padding: 6px 10px;
+    font-size: .68rem;
+  }
+  app-root .intro.intro { margin-top: 14px; padding: 28px 22px; }
+  app-root .catalog-section.catalog-section, app-root .history-section.history-section,
+  app-root .order-section.order-section { padding: 17px; border-radius: 16px; }
+  app-root .section-heading.section-heading { align-items: flex-start; }
+  app-root .product-grid.product-grid, app-root .order-section.order-section { grid-template-columns: minmax(0, 1fr); }
+  app-root .catalog-filters.catalog-filters { grid-template-columns: minmax(0, 1fr); }
+  app-root .catalog-filters .ghost-button.ghost-button { grid-column: auto; justify-self: stretch; }
+  app-root .product-card.product-card { grid-template-columns: 44px minmax(0, 1fr); gap: 10px; padding: 12px; }
+  app-root .product-actions.product-actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    justify-items: stretch;
+    gap: 9px 12px;
+    width: 100%;
+  }
+  app-root .product-actions.product-actions .price.price { grid-column: 1 / -1; }
+  app-root .product-quantity.product-quantity { grid-template-columns: auto minmax(56px, 72px); justify-content: start; }
+  app-root .add-button.add-button { min-height: 44px; white-space: normal; }
+  app-root .cart-overlay.cart-overlay {
+    align-items: end;
+    overflow-y: auto;
+    padding: 10px 10px max(10px, env(safe-area-inset-bottom));
+  }
+  app-root .cart-dialog.cart-dialog { width: 100%; max-height: min(90dvh, 760px); padding: 18px 16px; border-radius: 20px 20px 14px 14px; }
+  app-root .cart-dialog.cart-dialog .cart-header.cart-header { top: -18px; margin: -18px -16px 14px; padding: 15px 16px; }
+  app-root .cart-item.cart-item { align-items: flex-start; gap: 10px; padding: 11px; }
+  app-root .cart-meta.cart-meta { flex: 0 0 auto; }
+  app-root .quantity-control.quantity-control.quantity-control button { width: 36px; height: 36px; }
+  app-root .cart-dialog.cart-dialog .cart-buttons.cart-buttons { bottom: -18px; margin: 14px -16px -18px; padding: 12px 16px max(12px, env(safe-area-inset-bottom)); }
+  app-root .history-heading.history-heading { align-items: flex-start; }
+  app-root .order-line.order-line { grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; }
+  app-root .order-line strong { grid-column: 2; }
+}
+
+@media (max-width: 380px) {
+  app-root .page.page { width: calc(100% - 20px); }
+  app-root .topbar.topbar { gap: 7px; padding-inline: 10px; }
+  app-root .brand.brand { gap: 7px; font-size: .9rem; }
+  app-root .brand-mark.brand-mark { flex-basis: 34px; height: 34px; }
+  app-root .cart-shortcut.cart-shortcut, app-root .history-shortcut.history-shortcut { gap: 5px; padding-inline: 9px; font-size: .76rem; }
+  app-root .connection-badge.connection-badge { font-size: .62rem; }
+  app-root .catalog-section.catalog-section, app-root .history-section.history-section,
+  app-root .order-section.order-section { padding: 14px; }
+  app-root .section-heading h2, app-root .order-copy h2 { font-size: 1.05rem; }
+  app-root .product-card.product-card { gap: 8px; padding: 10px; }
+  app-root .product-actions.product-actions { gap: 8px; }
+  app-root .product-actions .add-button.add-button { padding-inline: 9px; font-size: .72rem; }
+  app-root .history-heading.history-heading, app-root .cart-item.cart-item { flex-wrap: wrap; }
+}
+
+app-root .page {
+  width: min(100% - 36px, 1040px);
+}
+
+app-root .topbar {
+  position: sticky;
+  z-index: 5;
+  top: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  gap: 12px;
+  width: 100vw;
+  min-height: 68px;
+  margin-inline: calc(50% - 50vw);
+  padding-inline: max(18px, calc((100vw - 1040px) / 2));
+  border: 0;
+  color: #fff;
+  background: linear-gradient(110deg, #06183e, #0033a0 72%, #1749b8);
+  box-shadow: 0 5px 18px #06183e2b;
+}
+
+app-root .brand {
+  min-width: 0;
+  color: #fff;
+}
+
+app-root .brand-mark {
+  color: #f0c879;
+  background: #ffffff1c;
+  box-shadow: inset 0 0 0 1px #ffffff30;
+}
+
+app-root .cart-shortcut,
+app-root .history-shortcut {
+  min-height: 42px;
+  padding: 8px 12px;
+  border-color: #ffffff42;
+  color: #fff;
+  background: #ffffff14;
+}
+
+app-root .cart-shortcut:hover,
+app-root .history-shortcut:hover {
+  background: #ffffff26;
+}
+
+app-root .connection-badge {
+  justify-content: center;
+  min-height: 38px;
+  white-space: nowrap;
+}
+
+app-root .intro {
+  margin-top: 20px;
+  padding: clamp(28px, 5vw, 48px);
+  border: 1px solid #ffffff;
+}
+
+app-root .catalog-section,
+app-root .history-section,
+app-root .order-section {
+  box-shadow: 0 8px 24px #15264a0b;
+}
+
+app-root .product-card {
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  min-width: 0;
+}
+
+app-root .product-icon {
+  flex-basis: 44px;
+  height: 44px;
+}
+
+app-root .product-info h3,
+app-root .history-item strong {
+  overflow-wrap: anywhere;
+}
+
+app-root .add-button,
+app-root .checkout-button,
+app-root .ghost-button,
+app-root .order-form button,
+app-root .cart-shortcut,
+app-root .history-shortcut {
+  min-height: 42px;
+}
+
+@media (max-width: 900px) {
+  app-root .page {
+    width: min(100% - 32px, 760px);
+  }
+
+  app-root .topbar {
+    padding-inline: max(16px, calc((100vw - 760px) / 2));
+  }
+
+  app-root .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  app-root .page {
+    width: min(100% - 24px, 520px);
+  }
+
+  app-root .topbar {
+    position: sticky;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 10px;
+    min-height: 0;
+    padding: 10px 12px;
+  }
+
+  app-root .brand {
+    font-size: .98rem;
+  }
+
+  app-root .cart-shortcut {
+    justify-self: end;
+  }
+
+  app-root .history-shortcut {
+    justify-self: start;
+  }
+
+  app-root .connection-badge {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+    min-height: 34px;
+    padding: 6px 10px;
+    font-size: .68rem;
+  }
+
+  app-root .intro {
+    margin-top: 14px;
+    padding: 28px 22px;
+  }
+
+  app-root .catalog-section,
+  app-root .history-section,
+  app-root .order-section {
+    padding: 17px;
+    border-radius: 16px;
+  }
+
+  app-root .section-heading {
+    align-items: flex-start;
+  }
+
+  app-root .product-grid,
+  app-root .order-section {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  app-root .product-card {
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px;
+  }
+
+  app-root .product-actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    justify-items: stretch;
+    gap: 9px 12px;
+    width: 100%;
+  }
+
+  app-root .product-actions .price {
+    grid-column: 1 / -1;
+  }
+
+  app-root .product-quantity {
+    grid-template-columns: auto minmax(56px, 72px);
+    justify-content: start;
+  }
+
+  app-root .add-button {
+    min-height: 44px;
+    white-space: normal;
+  }
+
+  app-root .cart-overlay {
+    align-items: end;
+    overflow-y: auto;
+    padding: 10px 10px max(10px, env(safe-area-inset-bottom));
+  }
+
+  app-root .cart-dialog {
+    width: 100%;
+    max-height: min(90dvh, 760px);
+    padding: 18px 16px;
+    border-radius: 20px 20px 14px 14px;
+  }
+
+  app-root .cart-dialog .cart-header {
+    top: -18px;
+    margin: -18px -16px 14px;
+    padding: 15px 16px;
+  }
+
+  app-root .cart-item {
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px;
+  }
+
+  app-root .cart-meta {
+    flex: 0 0 auto;
+  }
+
+  app-root .quantity-control button {
+    width: 36px;
+    height: 36px;
+  }
+
+  app-root .cart-dialog .cart-buttons {
+    bottom: -18px;
+    margin: 14px -16px -18px;
+    padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+  }
+
+  app-root .history-heading {
+    align-items: flex-start;
+  }
+
+  app-root .order-line {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 10px;
+  }
+
+  app-root .order-line strong {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 380px) {
+  app-root .page {
+    width: calc(100% - 20px);
+  }
+
+  app-root .topbar {
+    gap: 7px;
+    padding-inline: 10px;
+  }
+
+  app-root .brand {
+    gap: 7px;
+    font-size: .9rem;
+  }
+
+  app-root .brand-mark {
+    flex-basis: 34px;
+    height: 34px;
+  }
+
+  app-root .cart-shortcut,
+  app-root .history-shortcut {
+    gap: 5px;
+    padding-inline: 9px;
+    font-size: .76rem;
+  }
+
+  app-root .connection-badge {
+    font-size: .62rem;
+  }
+
+  app-root .catalog-section,
+  app-root .history-section,
+  app-root .order-section {
+    padding: 14px;
+  }
+
+  app-root .section-heading h2,
+  app-root .order-copy h2 {
+    font-size: 1.05rem;
+  }
+
+  app-root .product-card {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  app-root .product-actions {
+    gap: 8px;
+  }
+
+  app-root .product-actions .add-button {
+    padding-inline: 9px;
+    font-size: .72rem;
+  }
+
+  app-root .history-heading,
+  app-root .cart-item {
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 1101px) {
+  app-root .page.page {
+    width: min(100% - 64px, 1380px);
+  }
+
+  app-root .product-grid.product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  app-root .product-card.product-card {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  app-root .product-actions.product-actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    justify-items: stretch;
+    gap: 10px;
+    width: 100%;
+  }
+}
+
+@media (min-width: 1600px) {
+  app-root .page.page {
+    width: min(100% - 96px, 1560px);
+  }
+
+  app-root .product-grid.product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1100px) {
+  app-root .product-grid.product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  app-root .product-card.product-card {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  app-root .product-actions.product-actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    justify-items: stretch;
+    gap: 9px 12px;
+    width: 100%;
+  }
+
+  app-root .product-actions .add-button.add-button {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 900px) {
+  app-root .product-grid.product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  app-root .product-card.product-card {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  app-root .product-actions.product-actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    justify-items: stretch;
+    gap: 8px 10px;
+    width: 100%;
+  }
+
+  app-root .product-actions .price.price,
+  app-root .product-actions .add-button.add-button {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  app-root .intro.intro h1 {
+    font-size: clamp(1.9rem, 8vw, 3rem);
+  }
+
+  app-root .section-heading.section-heading .product-count {
+    max-width: 110px;
+    text-align: right;
+  }
+}
+
+@media (max-width: 380px) {
+  app-root .page.page {
+    width: calc(100% - 20px);
+  }
+
+  app-root .product-actions.product-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  app-root .product-actions .price.price,
+  app-root .product-actions .add-button.add-button {
+    grid-column: 1;
+  }
 }

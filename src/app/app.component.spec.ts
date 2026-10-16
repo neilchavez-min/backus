@@ -10,11 +10,16 @@ describe('AppComponent', () => {
   beforeEach(async () => {
     storage = jasmine.createSpyObj<StorageService>('StorageService', [
       'listarCarrito',
-      'listarCompras',
-      'finalizarCompra'
+      'listarPedidos',
+      'finalizarCompra',
+      'guardarPedido',
+      'agregarAlCarrito',
+      'actualizarCantidad',
+      'quitarDelCarrito',
+      'limpiarCarrito'
     ]);
     storage.listarCarrito.and.returnValue(Promise.resolve([]));
-    storage.listarCompras.and.returnValue(Promise.resolve([]));
+    storage.listarPedidos.and.returnValue(Promise.resolve([]));
 
     await TestBed.configureTestingModule({
       imports: [AppComponent],
@@ -43,7 +48,7 @@ describe('AppComponent', () => {
     expect(compiled.textContent).toContain('CONECTADO');
     expect(compiled.querySelector('.add-button')?.textContent).toContain('Agregar al carrito');
     expect(compiled.querySelector('.cart-shortcut')?.textContent).toContain('Carrito');
-    expect(compiled.querySelector('.history-shortcut')?.textContent).toContain('Compras');
+    expect(compiled.querySelector('.history-shortcut')?.textContent).toContain('Historial');
     expect(compiled.querySelector('.cart-dialog')).toBeNull();
     (compiled.querySelector('.cart-shortcut') as HTMLButtonElement).click();
     fixture.detectChanges();
@@ -61,17 +66,91 @@ describe('AppComponent', () => {
 
     const app = fixture.componentInstance;
     const items = [
+      {
+        productoId: 1,
+        producto: 'Cristal 620 ml',
+        precioUnitario: 7.5,
+        cantidad: 2,
+        subtotal: 15
+      }
+    ];
+    app.carrito = [
       { productoId: 1, producto: 'Cristal 620 ml', categoria: 'Cerveza', precio: 7.5, cantidad: 2 }
     ];
-    app.carrito = items;
+    app.online = false;
     spyOn(window, 'confirm').and.returnValue(true);
     storage.finalizarCompra.and.returnValue(Promise.resolve(1));
 
     await app.finalizarCompra();
 
-    expect(storage.finalizarCompra).toHaveBeenCalledWith(items, 15);
+    expect(storage.finalizarCompra).toHaveBeenCalledWith(items, 'OFFLINE');
     expect(app.carrito).toEqual([]);
-    expect(app.mensaje).toContain('Compra finalizada');
+    expect(app.mensaje).toContain('PENDIENTE');
+    expect(app.mensaje).toContain('No se envió al servidor');
+    http.verify();
+  });
+
+  it('should combine case-insensitive name search with category filter', async () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne('assets/data/catalogo.json').flush([
+      { id: 1, producto: 'Cristal 620 ml', categoria: 'Cerveza', precio: 7.5 },
+      { id: 2, producto: 'Pilsen Callao 620 ml', categoria: 'Cerveza', precio: 8 },
+      { id: 3, producto: 'Pilsen Sin Alcohol', categoria: 'Sin Alcohol', precio: 6 }
+    ]);
+    await fixture.whenStable();
+    const app = fixture.componentInstance;
+
+    app.busqueda = 'PILsen';
+    expect(app.productosFiltrados.map((producto) => producto.id)).toEqual([2, 3]);
+    app.categoriaSeleccionada = 'Cerveza';
+    expect(app.productosFiltrados.map((producto) => producto.id)).toEqual([2]);
+    http.verify();
+  });
+
+  it('should reject non-integer or non-positive product quantities', async () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne('assets/data/catalogo.json').flush([]);
+    await fixture.whenStable();
+    const app = fixture.componentInstance;
+
+    await app.agregarAlCarrito({
+      id: 1,
+      producto: 'Cristal 620 ml',
+      categoria: 'Cerveza',
+      precio: 7.5
+    }, 0);
+
+    expect(storage.agregarAlCarrito).not.toHaveBeenCalled();
+    expect(app.errorPedido).toContain('entero mayor que cero');
+    http.verify();
+  });
+
+  it('should persist a manually registered offline order with its origin', async () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne('assets/data/catalogo.json').flush([]);
+    await fixture.whenStable();
+    const app = fixture.componentInstance;
+    app.online = false;
+    app.pedido = 'Llamar al cliente para confirmar';
+    storage.guardarPedido.and.returnValue(Promise.resolve(4));
+
+    await app.guardarPedido();
+
+    expect(storage.guardarPedido).toHaveBeenCalledWith({
+      tipo: 'pedido',
+      observacion: 'Llamar al cliente para confirmar',
+      lineas: [],
+      total: 0,
+      origen: 'OFFLINE'
+    });
+    expect(app.mensaje).toContain('PENDIENTE');
+    expect(app.mensaje).toContain('No se envió al servidor');
     http.verify();
   });
 

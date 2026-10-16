@@ -40,7 +40,8 @@ La aplicación funciona sin backend. Los datos de catálogo se distribuyen como 
 | `src/manifest.webmanifest` | Nombre, iconos, colores y modo de presentación instalable. |
 | `ngsw-config.json` | Recursos precargados y estrategia de caché del catálogo. |
 | `src/app/app.config.ts` | Proveedores de HTTP, rutas y registro del Service Worker. |
-| `src/app/app.component.spec.ts` | Pruebas del renderizado del catálogo y del flujo de compra. |
+| `src/app/app.component.spec.ts` | Pruebas de catálogo, filtros, cantidades y flujo de la interfaz. |
+| `src/app/storage.service.spec.ts` | Pruebas de persistencia, cálculos y validación de IndexedDB. |
 
 ## 5. Catálogo
 
@@ -57,18 +58,20 @@ El catálogo está en `src/assets/data/catalogo.json` y contiene estos productos
 ## 6. Flujo de uso
 
 1. La aplicación consulta el catálogo local y muestra los productos y sus precios.
-2. Al pulsar **Agregar al carrito**, guarda el producto en IndexedDB y actualiza el contador del carrito.
-3. Al abrir **Carrito**, aparece una ventana flotante. El usuario puede:
+2. El usuario puede buscar por nombre sin distinguir mayúsculas/minúsculas, filtrar por categoría y combinar ambos filtros. **Limpiar filtros** restablece la lista.
+3. Cada producto acepta una cantidad: solo se agregan cantidades enteras mayores que cero. Un artículo ya presente aumenta su cantidad acumulada.
+4. Al pulsar **Agregar al carrito**, persiste el producto en IndexedDB y actualiza el contador del carrito.
+5. Al abrir **Carrito**, aparece una ventana flotante. El usuario puede:
    - aumentar o reducir unidades;
    - quitar un producto;
    - vaciar el carrito;
    - revisar el total.
-4. Al pulsar **Finalizar compra**, se solicita confirmación.
-5. Si se confirma, la aplicación registra la compra en IndexedDB y vacía el carrito dentro de una misma transacción. Si se cancela, el carrito no cambia.
-6. El historial muestra las compras almacenadas localmente. Cada compra permite descargar un comprobante de texto.
-7. El estado de conexión se muestra en la cabecera y se actualiza mediante eventos `online` y `offline`.
+6. Antes de confirmar, se rechazan carritos vacíos o con cantidades/precios inválidos. El resumen calcula un subtotal por línea y el total de los subtotales, redondeados a dos decimales.
+7. Al pulsar **Finalizar compra**, se solicita confirmación. Si se acepta, la aplicación guarda el pedido en IndexedDB y vacía el carrito dentro de una misma transacción; si se cancela o falla el guardado, no se confirma el éxito ni se pierde el carrito.
+8. El historial muestra pedidos locales con sus líneas, subtotales, total, fecha, origen y estado. Cada registro permite descargar su detalle.
+9. El estado de conexión se muestra en la cabecera y se actualiza mediante eventos `online` y `offline`. La interfaz informa claramente que el registro se conserva en el dispositivo y no se envía a un servidor.
 
-El formulario de registro manual conserva el comportamiento de demostración: online muestra una simulación de procesamiento; offline guarda el pedido en IndexedDB.
+El formulario de registro manual también se guarda en IndexedDB tanto online como offline. No simula un envío remoto: los registros permanecen en estado `PENDIENTE` hasta que se implemente una integración opcional con un servidor.
 
 ## 7. Persistencia local
 
@@ -84,14 +87,30 @@ productoId, producto, categoria, precio, cantidad
 
 El carrito se lee al iniciar la aplicación, así que sobrevive a recargas y desconexiones. Los datos están limitados al navegador y al origen (protocolo, host y puerto) donde se ejecuta la app.
 
+### Modelo de pedido
+
+Cada pedido nuevo incluye:
+
+```ts
+interface LineaPedido {
+  productoId: number;
+  producto: string;
+  precioUnitario: number;
+  cantidad: number;
+  subtotal: number;
+}
+
+type EstadoPedido = 'PENDIENTE' | 'SINCRONIZADO' | 'ERROR';
+type OrigenPedido = 'ONLINE' | 'OFFLINE';
+```
+
+Además, el registro mantiene `id`, `fecha`, `lineas`, `total`, `estado` y `origen`. Los pedidos manuales sin artículos guardan su texto como `observacion`, con total cero.
+
 ### Object Store `pedidos`
 
-Usa `id` como clave con autoincremento. Puede contener:
+Usa `id` como clave con autoincremento. Cada compra mantiene sus líneas de pedido, con precio unitario, cantidad y subtotal, además del total, fecha ISO, origen (`ONLINE` u `OFFLINE`) y estado inicial `PENDIENTE`. Los pedidos manuales se guardan con una observación y pueden tener líneas vacías.
 
-- pedidos guardados por el formulario, junto con `fecha` y `estado: "pendiente"`;
-- compras finalizadas con `tipo: "compra"`, `items`, `total`, `fecha` y `estado: "pendiente"`.
-
-La compra finalizada no es un comprobante tributario ni prueba de pago. Se genera localmente para la demostración.
+La compra finalizada no es un comprobante tributario ni prueba de pago. El detalle `.txt` se genera localmente para la demostración. Los registros antiguos se pueden seguir leyendo; si no guardaban origen, el historial los identifica como `NO REGISTRADO`.
 
 ## 8. Diseño responsive y accesibilidad
 
@@ -148,7 +167,7 @@ Ejecutar las pruebas unitarias del workspace:
 npx ng test --watch=false
 ```
 
-Las pruebas del componente verifican la carga del catálogo, la presencia de los controles del carrito y que la compra se guarde y vacíe el carrito únicamente cuando el usuario confirma.
+Las pruebas verifican búsqueda insensible a mayúsculas, combinación con categoría, validación de cantidades, guardado offline con origen explícito, cálculos de subtotales/total en IndexedDB, lectura del historial y persistencia atómica del pedido y vaciado del carrito.
 
 ## 13. Alcance y limitaciones
 

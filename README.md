@@ -11,10 +11,10 @@ Aplicación web progresiva de práctica para registrar pedidos de vendedores de 
 3. `src/app/app.config.ts`: `HttpClient`, rutas y registro del service worker solo en producción.
 4. `src/app/catalogo.service.ts`: tipo `Producto` y consulta HTTP del catálogo.
 5. `ngsw-config.json`: precaché de recursos y caché de datos del catálogo por un día.
-6. `src/app/app.component.ts`, `src/app/app.component.html` y `src/app/app.component.scss`: estado online/offline, catálogo y formulario de pedidos.
+6. `src/app/app.component.ts`, `src/app/app.component.html` y `src/app/app.component.scss`: estado online/offline, catálogo con búsqueda y filtros, cantidades, carrito y registro de pedidos.
 7. `src/app/storage.service.ts`: base `backusVentasDB` con almacenes `carrito` y `pedidos`, ambos persistidos localmente en IndexedDB.
-8. El botón Carrito abre una ventana flotante que permite aumentar o reducir unidades, quitar artículos, vaciar y finalizar una compra. Se puede cerrar con el botón, haciendo clic fuera de la ventana o con Escape. Antes de finalizar solicita confirmación; la compra se registra en `pedidos` y el carrito se limpia en una misma transacción.
-9. El historial muestra compras guardadas y permite descargar un comprobante `.txt`. Todo se ejecuta en el navegador, sin backend ni procesamiento de pagos.
+8. El carrito flotante permite aumentar o reducir unidades, quitar artículos, vaciar y finalizar una compra. Antes de finalizar solicita confirmación; el pedido se persiste en `pedidos` y el carrito se limpia en una misma transacción.
+9. El historial muestra pedidos y compras con sus líneas, subtotales, total, estado y origen, y permite descargar el detalle como `.txt`. Todo se ejecuta en el navegador, sin backend ni procesamiento de pagos.
 
 ## Cómo ejecutar y verificar
 
@@ -52,6 +52,6 @@ Aplicación web progresiva de práctica para registrar pedidos de vendedores de 
    - **Application → Service Workers**: `ngsw-worker.js` instalado y activo. Espera a que la aplicación se estabilice y recarga si es necesario.
    - **Application → Cache Storage**: recursos estáticos y el catálogo después de cargarlo con conexión.
    - **Application → IndexedDB → backusVentasDB → carrito**: agrega productos y comprueba sus cantidades guardadas.
-   - **Application → IndexedDB → backusVentasDB → pedidos**: finaliza una compra y verifica `id`, `tipo`, `items`, `total`, `fecha` y `estado: "pendiente"`. La sección Historial de compras permite revisar las compras y descargar un comprobante local.
+   - **Application → IndexedDB → backusVentasDB → pedidos**: finaliza una compra y verifica `id`, `tipo`, `lineas`, `total`, `fecha`, `origen` (`ONLINE`/`OFFLINE`) y `estado: "PENDIENTE"`. La sección Historial permite revisar pedidos y descargar sus detalles locales.
 
-   Para probar el estado offline, activa **Network → Offline** o desconecta la red desde DevTools y recarga la página después de su primer acceso online. El carrito y las compras se guardan localmente; no hay sincronización con servidor ni procesamiento de pagos.
+   Para probar el estado offline, activa **Network → Offline** o desconecta la red desde DevTools y recarga la página después de su primer acceso online. El carrito y los pedidos se guardan localmente; no hay sincronización con servidor ni procesamiento de pagos.

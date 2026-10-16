@@ -10,8 +10,8 @@
       <span class="cart-count">{{ cantidadCarrito }}</span>
     </button>
     <a class="history-shortcut" href="#historial">
-      Compras
-      <span class="cart-count">{{ compras.length }}</span>
+      Historial
+      <span class="cart-count">{{ pedidos.length }}</span>
     </a>
     <span class="connection-badge" [class.online]="online" [class.offline]="!online">
       <span class="connection-dot" aria-hidden="true"></span>
@@ -21,6 +21,9 @@
 
   @if (mensaje) {
     <p class="feedback success" role="status" aria-live="polite">{{ mensaje }}</p>
+  }
+  @if (errorPedido) {
+    <p class="feedback error" role="alert">{{ errorPedido }}</p>
   }
 
   <section class="intro">
@@ -37,7 +40,7 @@
         <p class="eyebrow">PORTAFOLIO</p>
         <h2 id="catalog-title">Catálogo de productos</h2>
       </div>
-      <span class="product-count">{{ productos.length }} productos</span>
+      <span class="product-count">{{ productosFiltrados.length }} de {{ productos.length }} productos</span>
     </div>
 
     @if (errorCatalogo) {
@@ -45,8 +48,41 @@
     } @else if (productos.length === 0) {
       <p class="empty-state">Cargando catálogo...</p>
     } @else {
+      <div class="catalog-filters">
+        <label>
+          Buscar por nombre
+          <input
+            type="search"
+            name="busqueda"
+            [(ngModel)]="busqueda"
+            [ngModelOptions]="{ standalone: true }"
+            placeholder="Ej.: Pilsen"
+          >
+        </label>
+        <label>
+          Categoría
+          <select
+            name="categoria"
+            [(ngModel)]="categoriaSeleccionada"
+            [ngModelOptions]="{ standalone: true }"
+          >
+            <option value="">Todas las categorías</option>
+            @for (categoria of categorias; track categoria) {
+              <option [value]="categoria">{{ categoria }}</option>
+            }
+          </select>
+        </label>
+        <button
+          type="button"
+          class="ghost-button"
+          (click)="busqueda = ''; categoriaSeleccionada = ''"
+          [disabled]="!busqueda && !categoriaSeleccionada"
+        >
+          Limpiar filtros
+        </button>
+      </div>
       <div class="product-grid">
-        @for (producto of productos; track producto.id) {
+        @for (producto of productosFiltrados; track producto.id) {
           <article class="product-card">
             <div class="product-icon" aria-hidden="true">B</div>
             <div class="product-info">
@@ -55,11 +91,27 @@
             </div>
             <div class="product-actions">
               <p class="price">S/ {{ producto.precio.toFixed(2) }}</p>
+              <label class="product-quantity">
+                Cantidad
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  [name]="'cantidad-' + producto.id"
+                  [ngModel]="cantidadesSeleccionadas[producto.id]"
+                  (ngModelChange)="cantidadesSeleccionadas[producto.id] = $event"
+                  [ngModelOptions]="{ standalone: true }"
+                  [attr.aria-label]="'Cantidad de ' + producto.producto"
+                >
+              </label>
               <button type="button" class="add-button" (click)="agregarAlCarrito(producto)">
                 Agregar al carrito
               </button>
             </div>
           </article>
+        }
+        @if (productosFiltrados.length === 0) {
+          <p class="empty-state filter-empty">No se encontraron productos con esos filtros.</p>
         }
       </div>
     }
@@ -136,39 +188,60 @@
     <div class="section-heading">
       <div>
         <p class="eyebrow">EN ESTE DISPOSITIVO</p>
-        <h2 id="history-title">Historial de compras</h2>
+        <h2 id="history-title">Historial de pedidos</h2>
       </div>
-      <button type="button" class="ghost-button" (click)="cargarHistorial()">Actualizar</button>
+      <button type="button" class="ghost-button" (click)="cargarHistorial()" [disabled]="cargandoHistorial">
+        {{ cargandoHistorial ? 'Actualizando...' : 'Actualizar' }}
+      </button>
     </div>
     @if (errorHistorial) {
       <p class="feedback error" role="alert">{{ errorHistorial }}</p>
     } @else if (cargandoHistorial) {
       <p class="empty-state">Cargando compras guardadas...</p>
-    } @else if (compras.length === 0) {
-      <p class="empty-state">Aún no hay compras guardadas.</p>
+    } @else if (pedidos.length === 0) {
+      <p class="empty-state">Aún no hay pedidos guardados.</p>
     } @else {
       <div class="history-list">
-        @for (compra of compras; track compra.id) {
+        @for (pedidoGuardado of pedidos; track pedidoGuardado.id) {
           <article class="history-item">
             <div class="history-heading">
               <div>
-                <strong>Compra #{{ compra.id }}</strong>
-                <small>{{ compra.fecha | date:'short' }}</small>
+                <strong>{{ pedidoGuardado.tipo === 'compra' ? 'Pedido del carrito' : 'Pedido' }} #{{ pedidoGuardado.id }}</strong>
+                <small>
+                  @if (pedidoGuardado.fecha === 'Fecha no registrada') {
+                    {{ pedidoGuardado.fecha }}
+                  } @else {
+                    {{ pedidoGuardado.fecha | date:'short' }}
+                  }
+                </small>
               </div>
-              <strong>S/ {{ compra.total.toFixed(2) }}</strong>
+              <strong>S/ {{ pedidoGuardado.total.toFixed(2) }}</strong>
             </div>
-            <ul>
-              @for (item of compra.items; track item.productoId) {
-                <li>{{ item.cantidad }} x {{ item.producto }}</li>
-              }
-            </ul>
-            <button type="button" class="ghost-button" (click)="exportarComprobante(compra)">
-              Descargar comprobante
+            <div class="order-metadata">
+              <span class="status-badge">{{ pedidoGuardado.estado }}</span>
+              <span>Origen: {{ pedidoGuardado.origen }}</span>
+            </div>
+            @if (pedidoGuardado.lineas.length > 0) {
+              <div class="order-lines">
+                @for (linea of pedidoGuardado.lineas; track linea.productoId) {
+                  <div class="order-line">
+                    <span>{{ linea.producto }}</span>
+                    <span>{{ linea.cantidad }} × S/ {{ linea.precioUnitario.toFixed(2) }}</span>
+                    <strong>S/ {{ linea.subtotal.toFixed(2) }}</strong>
+                  </div>
+                }
+              </div>
+            }
+            @if (pedidoGuardado.observacion) {
+              <p class="order-observation">{{ pedidoGuardado.observacion }}</p>
+            }
+            <button type="button" class="ghost-button" (click)="exportarComprobante(pedidoGuardado)">
+              Descargar detalle
             </button>
           </article>
         }
       </div>
-      <p class="history-note">Compras guardadas localmente; no representan pagos realizados.</p>
+      <p class="history-note">Los registros se conservan en este dispositivo con estado PENDIENTE. No se envían a un servidor.</p>
     }
   </section>
 
@@ -195,9 +268,6 @@
       </button>
     </form>
 
-    @if (errorPedido) {
-      <p class="feedback error" role="alert">{{ errorPedido }}</p>
-    }
   </section>
 
   <footer class="footer">
